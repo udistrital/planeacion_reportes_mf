@@ -1,0 +1,120 @@
+<mat-card class="card-oas">
+  <mat-card-header>
+    <div class="title">
+      <mat-card-title>
+        <h3>Reportes</h3>
+      </mat-card-title>
+      <u class="textGuide">
+        A continuación usted podrá generar un reporte del tipo de plan seleccionado y de la unidad específica de
+        interés.
+      </u>
+    </div>
+  </mat-card-header>
+  <mat-card-content>
+    <div class="container-border">
+      <h4>Generar Reporte</h4>
+      <form [formGroup]="form">
+        <mat-form-field appearance="fill" [style.width.%]="30">
+          <mat-label id="tipo-input-label">Vigencia</mat-label>
+          <mat-select formControlName="vigencia">
+            <mat-option>...</mat-option>
+            <mat-option *ngFor="let vigencia of vigencias" [value]="vigencia">
+              {{vigencia.Nombre}}
+            </mat-option>
+          </mat-select>
+        </mat-form-field>
+        <mat-form-field appearance="fill" [style.width.%]="30">
+          <mat-label id="tipo-input-label">Categoría</mat-label>
+          <mat-select (selectionChange)="onChangeC($event.value)" formControlName="categoria">
+            <mat-option>...</mat-option>
+            <mat-option value="planAccion">Plan de acción</mat-option>
+            <mat-option [disabled]="rol!='PLANEACION'" value="necesidades">Necesidades</mat-option>
+            <mat-option value="evaluacion">Evaluación</mat-option>
+          </mat-select>
+        </mat-form-field>
+        <mat-form-field appearance="fill" [style.width.%]="30">
+          <mat-label id="tipo-input-label">Tipo de reporte</mat-label>
+          <mat-select (selectionChange)="onChangeT($event.value)" formControlName="tipoReporte">
+            <mat-option>...</mat-option>
+            <mat-option value="unidad">Por unidad</mat-option>
+            <mat-option value="general">General</mat-option>
+          </mat-select>
+        </mat-form-field>
+        <mat-form-field appearance="fill" [style.width.%]="30">
+          <mat-label id="tipo-input-label">Unidad de interés</mat-label>
+          <mat-select formControlName="unidad">
+            <input (keyup)="onKey($event.target)" class="input-search"
+              placeholder="Escriba el nombre de la unidad que desea seleccionar">
+            <mat-option>--</mat-option>
+            <mat-option *ngFor="let unidad of auxUnidades" [value]="unidad">
+              {{unidad.Nombre}}
+            </mat-option>
+          </mat-select>
+        </mat-form-field>
+        <mat-form-field appearance="fill" [style.width.%]="30">
+          <mat-label id="tipo-input-label">Plan</mat-label>
+          <mat-select formControlName="plan">
+            <mat-option>--</mat-option>
+            <mat-option *ngFor="let plan of planes" [value]="plan">
+              {{plan.nombre}}
+            </mat-option>
+          </mat-select>
+        </mat-form-field>
+        <mat-form-field appearance="fill" [style.width.%]="30">
+          <mat-label id="tipo-input-label">Estado</mat-label>
+          <mat-select formControlName="estado">
+            <mat-option>--</mat-option>
+            <mat-option *ngFor="let estado of estados" [value]="estado._id">
+              {{estado.nombre}}
+            </mat-option>
+          </mat-select>
+        </mat-form-field>
+        <button [disabled]="!form.valid" mat-raised-button color="primary" type="submit" class="col-3 mt-2 mb-3"
+          (click)="validarReporte()">
+          Generar
+        </button>
+      </form>
+    </div>
+
+    <div class="container-border" *ngIf="tablaVisible">
+      <h4>Listado de reportes</h4>
+      <table mat-table [dataSource]="dataSource">
+        <ng-container matColumnDef="vigencia">
+          <th mat-header-cell *matHeaderCellDef>Vigencia</th>
+          <td mat-cell *matCellDef="let row"> {{row.vigencia}} </td>
+          <td mat-footer-cell *matFooterCellDef></td>
+        </ng-container>
+        <ng-container matColumnDef="unidad">
+          <th mat-header-cell *matHeaderCellDef>Unidad</th>
+          <td mat-cell *matCellDef="let row"> {{row.nombre_unidad}} </td>
+          <td mat-footer-cell *matFooterCellDef></td>
+        </ng-container>
+        <ng-container matColumnDef="tipoPlan">
+          <th mat-header-cell *matHeaderCellDef>Tipo de reporte</th>
+          <td mat-cell *matCellDef="let row"> {{row.tipo_plan}} </td>
+          <td mat-footer-cell *matFooterCellDef></td>
+        </ng-container>
+        <ng-container matColumnDef="estado">
+          <div *ngIf="evaluacion; else notEvaluaion">
+            <th mat-header-cell *matHeaderCellDef>Plan</th>
+            <td mat-cell *matCellDef="let row"> {{row.estado_plan}} </td>
+            <td mat-footer-cell *matFooterCellDef></td>
+          </div>
+          <ng-template #notEvaluaion>
+            <th mat-header-cell *matHeaderCellDef>Estado</th>
+            <td mat-cell *matCellDef="let row"> {{row.estado_plan}} </td>
+            <td mat-footer-cell *matFooterCellDef></td>
+          </ng-template>
+        </ng-container>
+        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+        <tr mat-footer-row *matFooterRowDef="displayedColumns"></tr>
+      </table>
+      <mat-paginator [pageSizeOptions]="[5, 10, 25, 100]" aria-label="Select page of users"></mat-paginator>
+      <button [disabled]="!form.valid" mat-raised-button color="primary" type="submit" class="col-3 mt-2 mb-3"
+        (click)="descargarReporte()">
+        Descargar
+      </button>
+    </div>
+  </mat-card-content>
+</mat-card>
