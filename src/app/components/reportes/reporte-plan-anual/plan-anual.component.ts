@@ -248,7 +248,7 @@ export class PlanAnualComponent implements OnInit {
       body["categoria"] = "Evaluación";
     }
 
-    this.request.post(environment.PLANES_MID, `reportes/validar_reporte`, body).subscribe((res: any) => {
+    this.request.post(environment.PLANEACION_REPORTES_MID, `reportes/validar_reporte`, body).subscribe((res: any) => {
       if (res) {
         if (res.Data.reporte) {
           this.generarReporte();
@@ -280,7 +280,7 @@ export class PlanAnualComponent implements OnInit {
       vigencia: (formularioData.vigencia.Id).toString(),
     }
 
-    this.request.post(environment.PLANES_MID, `reportes/plan_anual_general/`+ formularioData.plan.nombre, body).subscribe(
+    this.request.post(environment.PLANEACION_REPORTES_MID, `reportes/plan_anual_general/`+ formularioData.plan.nombre, body).subscribe(
       (data: any) => {
         if (data) {
           let infoReportes: any[] = data.Data.generalData;
@@ -316,7 +316,7 @@ export class PlanAnualComponent implements OnInit {
       vigencia: (formularioData.vigencia.Id).toString(),
     }
 
-    this.request.post(environment.PLANES_MID, `reportes/plan_anual/` + formularioData.plan.nombre.replace(/ /g, "%20"), body).subscribe(
+    this.request.post(environment.PLANEACION_REPORTES_MID, `reportes/plan_anual/` + formularioData.plan.nombre.replace(/ /g, "%20"), body).subscribe(
       (data: any) => {
         if (data) {
           if (data.Data.generalData) {
@@ -363,7 +363,7 @@ export class PlanAnualComponent implements OnInit {
       vigencia: (formularioData.vigencia.Id).toString(),
     }
 
-    this.request.post(environment.PLANES_MID, `reportes/necesidades/` + formularioData.plan.nombre.replace(/ /g, "%20"), body).subscribe(
+    this.request.post(environment.PLANEACION_REPORTES_MID, `reportes/necesidades/` + formularioData.plan.nombre.replace(/ /g, "%20"), body).subscribe(
       (data: any) => {
         if (data) {
           this.dataSource.data = [];
@@ -400,7 +400,7 @@ export class PlanAnualComponent implements OnInit {
       vigencia: (formularioData.vigencia.Id).toString(),
     }
 
-    this.request.post(environment.PLANES_MID, `reportes/plan_anual_evaluacion/` + formularioData.plan.nombre.replace(/ /g, "%20"), body).subscribe(
+    this.request.post(environment.PLANEACION_REPORTES_MID, `reportes/plan_anual_evaluacion/` + formularioData.plan.nombre.replace(/ /g, "%20"), body).subscribe(
       (data: any) => {
         if (data) {
           if (data.Data.generalData) {
