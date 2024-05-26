@@ -71,7 +71,7 @@ export class PlanAnualComponent implements OnInit {
     var documento: any = this.autenticationService.getDocument();
     this.request.get(environment.TERCEROS_SERVICE, `datos_identificacion/?query=Numero:` + documento.__zone_symbol__value)
       .subscribe((datosInfoTercero: any) => {
-        this.request.get(environment.PLANES_MID, `formulacion/vinculacion_tercero/` + datosInfoTercero[0].TerceroId.Id)
+        this.request.get(environment.PLANEACION_FORMULACION_MID, `formulacion/vinculacion_tercero/` + datosInfoTercero[0].TerceroId.Id)
           .subscribe((vinculacion: any) => {
             if (vinculacion["Data"] != "") {
               this.request.get(environment.OIKOS_SERVICE, `dependencia_tipo_dependencia?query=DependenciaId:` + vinculacion["Data"]["DependenciaId"]).subscribe((dataUnidad: any) => {
@@ -247,15 +247,16 @@ export class PlanAnualComponent implements OnInit {
       body["unidad_id"] = (unidad.Id).toString();
       body["categoria"] = "Evaluación";
     }
-
-    this.request.post(environment.PLANEACION_REPORTES_MID, `reportes/validacion`, body).subscribe((res: any) => {
+    //console.log('UNIDAD' , unidad, 'VIGENCIA' , vigencia, 'TIPOREPORTE' , tipoReporte, 'CATEGORIA' , categoria, 'ESTADO' , estado,'PLAN' ,  plan,'BODY' , body);
+    this.request.post(environment.PLANEACION_REPORTES_MID, `validacion`, body).subscribe((res: any) => {
       if (res) {
-        if (res.Data.reporte) {
+        console.log('2.data con data y Data', res );
+        if (res.data.reporte) {
           this.generarReporte();
         } else {
           Swal.fire({
             title: 'No es posible generar un reporte',
-            text: res.Data.mensaje,
+            text: res.data.mensaje,
             icon: 'info',
             showConfirmButton: false,
             timer: 3500
@@ -265,7 +266,7 @@ export class PlanAnualComponent implements OnInit {
     }, (error) => {
       Swal.fire({
         title: 'Error en la operación',
-        text: `No es posible generar el reporte`,
+        text: `No existen registros con el estado y plan seleccionado`,
         icon: 'error',
         showConfirmButton: false,
         timer: 2500
@@ -280,12 +281,12 @@ export class PlanAnualComponent implements OnInit {
       vigencia: (formularioData.vigencia.Id).toString(),
     }
 
-    this.request.post(environment.PLANEACION_REPORTES_MID, `reportes/plan-anual-general/`+ formularioData.plan.nombre, body).subscribe(
+    this.request.post(environment.PLANEACION_REPORTES_MID, `plan-anual-general/`+ formularioData.plan.nombre, body).subscribe(
       (data: any) => {
         if (data) {
-          let infoReportes: any[] = data.Data.generalData;
+          let infoReportes: any[] = data.data.generalData;
           this.dataSource.data = [];
-          this.reporte_archivo = data.Data["excelB64"];
+          this.reporte_archivo = data.data["excelB64"];
           for (let i = 0; i < infoReportes.length; i++) {
             infoReportes[i]["vigencia"] = formularioData.vigencia["Nombre"]
             if (i == infoReportes.length - 1) {
@@ -316,15 +317,15 @@ export class PlanAnualComponent implements OnInit {
       vigencia: (formularioData.vigencia.Id).toString(),
     }
 
-    this.request.post(environment.PLANEACION_REPORTES_MID, `reportes/plan-anual/` + formularioData.plan.nombre.replace(/ /g, "%20"), body).subscribe(
+    this.request.post(environment.PLANEACION_REPORTES_MID, `plan-anual/` + formularioData.plan.nombre.replace(/ /g, "%20"), body).subscribe(
       (data: any) => {
         if (data) {
-          if (data.Data.generalData) {
+          if (data.data.generalData) {
             this.dataSource.data = [];
             let auxEstado = this.estados.find(element => element._id === formularioData.estado);
             this.reporte = body;
-            this.reporte_archivo = data.Data.excelB64;
-            this.reporte["nombre_unidad"] = data.Data.generalData[0].nombreUnidad;
+            this.reporte_archivo = data.data.excelB64;
+            this.reporte["nombre_unidad"] = data.data.generalData[0].nombreUnidad;
             this.reporte["vigencia"] = formularioData.vigencia.Nombre
             this.reporte["tipo_plan"] = "Plan de acción de funcionamiento"
             this.reporte["estado_plan"] = auxEstado.nombre
@@ -363,13 +364,13 @@ export class PlanAnualComponent implements OnInit {
       vigencia: (formularioData.vigencia.Id).toString(),
     }
 
-    this.request.post(environment.PLANEACION_REPORTES_MID, `reportes/necesidades/` + formularioData.plan.nombre.replace(/ /g, "%20"), body).subscribe(
+    this.request.post(environment.PLANEACION_REPORTES_MID, `necesidades/` + formularioData.plan.nombre.replace(/ /g, "%20"), body).subscribe(
       (data: any) => {
         if (data) {
           this.dataSource.data = [];
           let auxEstado = this.estados.find(element => element._id === formularioData.estado);
           this.reporte = body;
-          this.reporte_archivo = data.Data["excelB64"];
+          this.reporte_archivo = data.data["excelB64"];
           this.reporte["nombre_unidad"] = "General";
           this.reporte["vigencia"] = formularioData.vigencia.Nombre;
           this.reporte["tipo_plan"] = "Necesidades";
@@ -400,14 +401,14 @@ export class PlanAnualComponent implements OnInit {
       vigencia: (formularioData.vigencia.Id).toString(),
     }
 
-    this.request.post(environment.PLANEACION_REPORTES_MID, `reportes/plan-anual-evaluacion/` + formularioData.plan.nombre.replace(/ /g, "%20"), body).subscribe(
+    this.request.post(environment.PLANES_MID, `plan-anual-evaluacion/` + formularioData.plan.nombre.replace(/ /g, "%20"), body).subscribe(
       (data: any) => {
         if (data) {
-          if (data.Data.generalData) {
+          if (data.data.generalData) {
             this.dataSource.data = [];
             this.reporte = body;
-            this.reporte_archivo = data.Data.excelB64;
-            this.reporte["nombre_unidad"] = data.Data.generalData[0].nombreUnidad;
+            this.reporte_archivo = data.data.excelB64;
+            this.reporte["nombre_unidad"] = data.data.generalData[0].nombreUnidad;
             this.reporte["vigencia"] = formularioData.vigencia.Nombre
             this.reporte["tipo_plan"] = "Evaluación plan de acción"
             this.reporte["estado_plan"] = formularioData.plan.nombre;
