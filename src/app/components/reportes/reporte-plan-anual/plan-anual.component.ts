@@ -401,7 +401,7 @@ export class PlanAnualComponent implements OnInit {
       vigencia: (formularioData.vigencia.Id).toString(),
     }
 
-    this.request.post(environment.PLANES_MID, `plan-anual-evaluacion/` + formularioData.plan.nombre.replace(/ /g, "%20"), body).subscribe(
+    this.request.post(environment.PLANEACION_REPORTES_MID, `plan-anual-evaluacion/` + formularioData.plan.nombre.replace(/ /g, "%20"), body).subscribe(
       (data: any) => {
         if (data) {
           if (data.data.generalData) {
