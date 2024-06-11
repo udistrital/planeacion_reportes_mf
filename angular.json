@@ -38,7 +38,7 @@
               "libraryName": "planeacion-reportes-mf",
               "libraryTarget": "umd"
             },
-            "deployUrl": "http://localhost:4202/"
+            "deployUrl": "http://localhost:4201/"
           },
           "configurations": {
             "production": {
@@ -107,5 +107,8 @@
         }
       }
     }
+  },
+  "cli": {
+    "analytics": "7c8fc2d0-1ad7-4c6a-9334-3cb92b24bf02"
   }
 }
