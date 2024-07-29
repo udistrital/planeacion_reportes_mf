@@ -1,11 +1,10 @@
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { MatTableDataSource } from '@angular/material/table';
-import { ImplicitAutenticationService } from '../../../services/implicit_autentication.service';
+import { ImplicitAutenticationService, CodigosService } from '@udistrital/planeacion-utilidades-module';
 import { environment } from 'src/environments/environment';
 import Swal from 'sweetalert2';
 import { RequestManager } from '../../../services/requestManager';
-import { UserService } from '../../../services/userService';
 
 @Component({
   selector: 'app-plan-anual',
@@ -29,12 +28,31 @@ export class PlanAnualComponent implements OnInit {
   planes: any[] = [];
   evaluacion: boolean = false;
 
+  //Servicios Utilidades Module
+  private autenticationService = new ImplicitAutenticationService();
+  private codigosService = new CodigosService();
+
   constructor(
     private formBuilder: FormBuilder,
     private request: RequestManager,
-    private autenticationService: ImplicitAutenticationService,
-    private userService: UserService
   ) {
+    this.loadVigencias();
+    this.loadPlanes();
+    this.unidadVisible = true;
+    this.tablaVisible = false;
+    this.estados = [];
+    this.dataSource = new MatTableDataSource<any>();
+    this.displayedColumns = ['vigencia', 'unidad', 'tipoPlan', 'estado'];
+
+    let roles: any = this.autenticationService.getRoles();
+    if (roles.__zone_symbol__value.find((x: any) => x == 'JEFE_DEPENDENCIA' || x == 'ASISTENTE_DEPENDENCIA')) {
+      this.rol = 'JEFE_DEPENDENCIA';
+      this.validarUnidad();
+    } else if (roles.__zone_symbol__value.find((x: any) => x == 'PLANEACION')) {
+      this.rol = 'PLANEACION';
+      this.loadUnidades();
+    }
+
     this.form = this.formBuilder.group({
       vigencia: ['', Validators.required],
       tipoReporte: ['', Validators.required],
@@ -43,32 +61,14 @@ export class PlanAnualComponent implements OnInit {
       estado: ['', Validators.required],
       plan: ['', Validators.required],
     });
-    this.loadVigencias();
+  }
+
+  async ngOnInit() {
     this.loadEstados();
-    this.loadPlanes();
-    this.unidadVisible = true;
-    this.tablaVisible = false;
-    this.estados = [];
-    this.dataSource = new MatTableDataSource<any>();
-    this.displayedColumns = ['vigencia', 'unidad', 'tipoPlan', 'estado'];
-    this.getRol();
   }
-
-  getRol() {
-    let roles: any = this.autenticationService.getRole();
-    if (roles.__zone_symbol__value.find((x:any) => x == 'JEFE_DEPENDENCIA' || x == 'ASISTENTE_DEPENDENCIA')) {
-      this.rol = 'JEFE_DEPENDENCIA';
-      this.validarUnidad();
-    } else if (roles.__zone_symbol__value.find((x:any) => x == 'PLANEACION')) {
-      this.rol = 'PLANEACION';
-      this.loadUnidades();
-    }
-  }
-
-  ngOnInit(): void {}
 
   validarUnidad() {
-    var documento: any = this.autenticationService.getDocument();
+    var documento: any = this.autenticationService.getDocumento();
     this.request.get(environment.TERCEROS_SERVICE, `datos_identificacion/?query=Numero:` + documento.__zone_symbol__value)
       .subscribe((datosInfoTercero: any) => {
         this.request.get(environment.PLANEACION_FORMULACION_MID, `formulacion/vinculacion_tercero/` + datosInfoTercero[0].TerceroId.Id)
@@ -109,7 +109,7 @@ export class PlanAnualComponent implements OnInit {
         if (data) {
           successCallback(data.Data);
         }
-      }, 
+      },
       (error) => {
         Swal.fire({
           title: 'Error en la operación',
@@ -121,20 +121,20 @@ export class PlanAnualComponent implements OnInit {
       }
     );
   }
-  
+
   loadVigencias() {
     this.loadData(environment.PARAMETROS_SERVICE, `periodo?query=CodigoAbreviacion:VG,activo:true`, (data) => {
       this.vigencias = data;
     });
   }
-  
+
   loadUnidades() {
     this.loadData(environment.PLANES_MID, `formulacion/get_unidades`, (data) => {
       this.unidades = data;
       this.auxUnidades = data;
     });
   }
-  
+
   loadPlanes() {
     this.loadData(environment.PLANES_CRUD, `plan?query=activo:true,formato:true`, (data) => {
       this.planes = data;
@@ -163,7 +163,7 @@ export class PlanAnualComponent implements OnInit {
     });
   }
 
-  onKey(target:any) {
+  onKey(target: any) {
     if (target.value === "") {
       this.auxUnidades = this.unidades;
     } else {
@@ -172,7 +172,7 @@ export class PlanAnualComponent implements OnInit {
     }
   }
 
-  onChangeT(tipo:any) {
+  onChangeT(tipo: any) {
     if (tipo === 'unidad') {
       this.form.get('unidad')?.enable();
       this.unidadVisible = true;
@@ -183,7 +183,7 @@ export class PlanAnualComponent implements OnInit {
     }
   }
 
-  onChangeC(categoria:any) {
+  onChangeC(categoria: any) {
     this.evaluacion = false;
     if (categoria == 'necesidades') {
       this.form.get('tipoReporte')?.setValue('general');
@@ -200,6 +200,8 @@ export class PlanAnualComponent implements OnInit {
       }
       this.form.get('estado')?.setValue(null);
       this.form.get('estado')?.disable();
+      this.form.get('unidad')?.enable();
+      this.form.get('unidad')?.setValue(null);
       this.evaluacion = true;
     } else {
       if (this.rol == 'PLANEACION') {
@@ -211,7 +213,7 @@ export class PlanAnualComponent implements OnInit {
     }
   }
 
-  validarReporte() {
+  async verificar() {
     let unidad = this.form.get('unidad')?.value;
     let vigencia = this.form.get('vigencia')?.value;
     let tipoReporte = this.form.get('tipoReporte')?.value;
@@ -219,7 +221,8 @@ export class PlanAnualComponent implements OnInit {
     let estado = this.form.get('estado')?.value;
     let plan = this.form.get('plan')?.value;
     let body: any = {
-      tipo_plan_id: "61639b8c1634adf976ed4b4c",
+      plan_id: plan._id,
+      tipo_plan_id: await this.codigosService.getId('PLANES_CRUD', 'tipo-plan', 'PAF_SP'),
       vigencia: (vigencia.Id).toString(),
       nombre: plan.nombre
     };
@@ -227,6 +230,7 @@ export class PlanAnualComponent implements OnInit {
       title: 'Validando reporte',
       timerProgressBar: true,
       showConfirmButton: false,
+      allowOutsideClick: false,
       willOpen: () => {
         Swal.showLoading();
       },
@@ -235,10 +239,10 @@ export class PlanAnualComponent implements OnInit {
       if (tipoReporte === 'unidad') {
         body["unidad_id"] = (unidad.Id).toString();
         body["estado_plan_id"] = estado;
-        body["categoria"] = "Plan de acción unidad";
+        body["categoria"] = "Plan_Accion_Unidad";
       } else if (tipoReporte === 'general') {
         body["estado_plan_id"] = estado;
-        body["categoria"] = "Plan de acción general";
+        body["categoria"] = "Plan_Accion_General";
       }
     } else if (categoria === 'necesidades') {
       body["estado_plan_id"] = estado;
@@ -247,11 +251,9 @@ export class PlanAnualComponent implements OnInit {
       body["unidad_id"] = (unidad.Id).toString();
       body["categoria"] = "Evaluación";
     }
-    //console.log('UNIDAD' , unidad, 'VIGENCIA' , vigencia, 'TIPOREPORTE' , tipoReporte, 'CATEGORIA' , categoria, 'ESTADO' , estado,'PLAN' ,  plan,'BODY' , body);
     this.request.post(environment.PLANEACION_REPORTES_MID, `validacion`, body).subscribe((res: any) => {
       if (res) {
-        console.log('2.data con data y Data', res );
-        if (res.data.reporte) {
+        if (res.Data.reporte) {
           this.generarReporte();
         } else {
           Swal.fire({
@@ -274,19 +276,19 @@ export class PlanAnualComponent implements OnInit {
     })
   }
 
-  procesarPlanAccionGeneral(formularioData:any) {
+  async procesarPlanAccionGeneral(formularioData: any) {
     let body = {
-      tipo_plan_id: "61639b8c1634adf976ed4b4c",
+      tipo_plan_id: await this.codigosService.getId('PLANES_CRUD', 'tipo-plan', 'PAF_SP'),
       estado_plan_id: formularioData.estado,
       vigencia: (formularioData.vigencia.Id).toString(),
     }
 
-    this.request.post(environment.PLANEACION_REPORTES_MID, `plan-anual-general/`+ formularioData.plan.nombre, body).subscribe(
+    this.request.post(environment.PLANEACION_REPORTES_MID, `plan-anual-general/` + formularioData.plan.nombre, body).subscribe(
       (data: any) => {
         if (data) {
-          let infoReportes: any[] = data.data.generalData;
+          let infoReportes: any[] = data.Data.generalData;
           this.dataSource.data = [];
-          this.reporte_archivo = data.data["excelB64"];
+          this.reporte_archivo = data.Data["excelB64"];
           for (let i = 0; i < infoReportes.length; i++) {
             infoReportes[i]["vigencia"] = formularioData.vigencia["Nombre"]
             if (i == infoReportes.length - 1) {
@@ -309,10 +311,10 @@ export class PlanAnualComponent implements OnInit {
     )
   }
 
-  procesarPlanAccion(formularioData:any){
+  async procesarPlanAccion(formularioData: any) {
     let body = {
       unidad_id: (formularioData.unidad.Id).toString(),
-      tipo_plan_id: "61639b8c1634adf976ed4b4c",
+      tipo_plan_id: await this.codigosService.getId('PLANES_CRUD', 'tipo-plan', 'PAF_SP'),
       estado_plan_id: formularioData.estado,
       vigencia: (formularioData.vigencia.Id).toString(),
     }
@@ -320,12 +322,12 @@ export class PlanAnualComponent implements OnInit {
     this.request.post(environment.PLANEACION_REPORTES_MID, `plan-anual/` + formularioData.plan.nombre.replace(/ /g, "%20"), body).subscribe(
       (data: any) => {
         if (data) {
-          if (data.data.generalData) {
+          if (data.Data.generalData) {
             this.dataSource.data = [];
             let auxEstado = this.estados.find(element => element._id === formularioData.estado);
             this.reporte = body;
-            this.reporte_archivo = data.data.excelB64;
-            this.reporte["nombre_unidad"] = data.data.generalData[0].nombreUnidad;
+            this.reporte_archivo = data.Data.excelB64;
+            this.reporte["nombre_unidad"] = data.Data.generalData[0].nombreUnidad;
             this.reporte["vigencia"] = formularioData.vigencia.Nombre
             this.reporte["tipo_plan"] = "Plan de acción de funcionamiento"
             this.reporte["estado_plan"] = auxEstado.nombre
@@ -357,9 +359,9 @@ export class PlanAnualComponent implements OnInit {
     )
   }
 
-  procesarNecesidades(formularioData:any){
+  async procesarNecesidades(formularioData: any) {
     let body = {
-      tipo_plan_id: "61639b8c1634adf976ed4b4c",
+      tipo_plan_id: await this.codigosService.getId('PLANES_CRUD', 'tipo-plan', 'PAF_SP'),
       estado_plan_id: formularioData.estado,
       vigencia: (formularioData.vigencia.Id).toString(),
     }
@@ -370,7 +372,7 @@ export class PlanAnualComponent implements OnInit {
           this.dataSource.data = [];
           let auxEstado = this.estados.find(element => element._id === formularioData.estado);
           this.reporte = body;
-          this.reporte_archivo = data.data["excelB64"];
+          this.reporte_archivo = data.Data["excelB64"];
           this.reporte["nombre_unidad"] = "General";
           this.reporte["vigencia"] = formularioData.vigencia.Nombre;
           this.reporte["tipo_plan"] = "Necesidades";
@@ -394,21 +396,21 @@ export class PlanAnualComponent implements OnInit {
     )
   }
 
-  procesarEvaluacion(formularioData:any) {
+  async procesarEvaluacion(formularioData: any) {
     let body = {
       unidad_id: (formularioData.unidad.Id).toString(),
-      tipo_plan_id: "61639b8c1634adf976ed4b4c",
+      tipo_plan_id: await this.codigosService.getId('PLANES_CRUD', 'tipo-plan', 'PAF_SP'),
       vigencia: (formularioData.vigencia.Id).toString(),
     }
 
     this.request.post(environment.PLANEACION_REPORTES_MID, `plan-anual-evaluacion/` + formularioData.plan.nombre.replace(/ /g, "%20"), body).subscribe(
       (data: any) => {
         if (data) {
-          if (data.data.generalData) {
+          if (data.Data.generalData) {
             this.dataSource.data = [];
             this.reporte = body;
-            this.reporte_archivo = data.data.excelB64;
-            this.reporte["nombre_unidad"] = data.data.generalData[0].nombreUnidad;
+            this.reporte_archivo = data.Data.excelB64;
+            this.reporte["nombre_unidad"] = data.Data.generalData[0].nombreUnidad;
             this.reporte["vigencia"] = formularioData.vigencia.Nombre
             this.reporte["tipo_plan"] = "Evaluación plan de acción"
             this.reporte["estado_plan"] = formularioData.plan.nombre;
@@ -454,6 +456,7 @@ export class PlanAnualComponent implements OnInit {
       title: 'Generando Reporte',
       timerProgressBar: true,
       showConfirmButton: false,
+      allowOutsideClick: false,
       willOpen: () => {
         Swal.showLoading();
       },
@@ -480,7 +483,7 @@ export class PlanAnualComponent implements OnInit {
     anchor.click();
   }
 
-  public base64ToBlob(b64Data:any, sliceSize = 512) {
+  public base64ToBlob(b64Data: any, sliceSize = 512) {
     let byteCharacters = atob(b64Data); //data.file there
     let byteArrays = [];
     for (let offset = 0; offset < byteCharacters.length; offset += sliceSize) {
