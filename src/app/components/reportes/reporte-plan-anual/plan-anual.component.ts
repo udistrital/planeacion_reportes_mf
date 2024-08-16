@@ -478,7 +478,23 @@ export class PlanAnualComponent implements OnInit {
     let blob = this.base64ToBlob(this.reporte_archivo);
     let url = window.URL.createObjectURL(blob);
     var anchor = document.createElement("a");
-    anchor.download = "Reporte.xlsx";
+    let categoria = this.form.get('categoria')!.value;
+    let vigencia = this.form.get('vigencia')!.value;
+    let plan = this.form.get('plan')!.value;
+    if (categoria === 'planAccion') {
+      let tipoReporte = this.form.get('tipoReporte')!.value;
+      if (tipoReporte === 'unidad') {
+        let unidad = this.form.get('unidad')!.value;
+        anchor.download = "Reporte_Plan_Accion_" + unidad.Nombre + ".xlsx";
+      } else if (tipoReporte === 'general') {
+        anchor.download = "Reporte_General_" + vigencia.Nombre + ".xlsx";
+      }
+    } else if (categoria === 'necesidades') {
+      anchor.download = "Reporte_Necesidades_" + vigencia.Nombre + ".xlsx";
+    } else if (categoria === 'evaluacion') {
+      let unidad = this.form.get('unidad')!.value;
+      anchor.download = "Reporte_Evaluacion_" + unidad.Nombre + ".xlsx";
+    }
     anchor.href = url;
     anchor.click();
   }
