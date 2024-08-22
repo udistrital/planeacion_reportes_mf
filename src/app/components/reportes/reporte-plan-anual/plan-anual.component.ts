@@ -5,6 +5,7 @@ import { ImplicitAutenticationService, CodigosService } from '@udistrital/planea
 import { environment } from 'src/environments/environment';
 import Swal from 'sweetalert2';
 import { RequestManager } from '../../../services/requestManager';
+import { DataRequest } from 'src/app/@core/models/dataRequest';
 
 @Component({
   selector: 'app-plan-anual',
@@ -71,24 +72,28 @@ export class PlanAnualComponent implements OnInit {
     var documento: any = this.autenticationService.getDocumento();
     this.request.get(environment.TERCEROS_SERVICE, `datos_identificacion/?query=Numero:` + documento.__zone_symbol__value)
       .subscribe((datosInfoTercero: any) => {
-        this.request.get(environment.PLANEACION_FORMULACION_MID, `formulacion/vinculacion_tercero/` + datosInfoTercero[0].TerceroId.Id)
-          .subscribe((vinculacion: any) => {
+        this.request.get(environment.PLANEACION_FORMULACION_MID, `formulacion/tercero/` + datosInfoTercero[0].TerceroId.Id)
+          .subscribe((vinculacion: DataRequest) => {
             if (vinculacion["Data"] != "") {
-              this.request.get(environment.OIKOS_SERVICE, `dependencia_tipo_dependencia?query=DependenciaId:` + vinculacion["Data"]["DependenciaId"]).subscribe((dataUnidad: any) => {
-                if (dataUnidad) {
-                  this.unidades = [];
-                  this.auxUnidades = [];
-                  let unidad = dataUnidad[0]["DependenciaId"]
-                  unidad["TipoDependencia"] = dataUnidad[0]["TipoDependenciaId"]["Id"]
-                  this.unidades.push(unidad);
-                  this.auxUnidades.push(unidad);
-                  this.form.get('unidad')?.setValue(unidad);
-                  this.moduloVisible = true;
-                  this.form.get('categoria')?.setValue("planAccion");
-                  this.form.get('tipoReporte')?.setValue("unidad");
-                  this.form.get('tipoReporte')?.disable();
-                }
-              })
+              this.unidades = [];
+              this.auxUnidades = [];
+              (vinculacion.Data as any[]).forEach((vinculacion:any, i: number) => {
+                this.request.get(environment.OIKOS_SERVICE, `dependencia_tipo_dependencia?query=DependenciaId:` + vinculacion["DependenciaId"]).subscribe((dataUnidad: any) => {
+                  if (dataUnidad) {
+                    let unidad = dataUnidad[0]["DependenciaId"]
+                    unidad["TipoDependencia"] = dataUnidad[0]["TipoDependenciaId"]["Id"]
+                    this.unidades.push(unidad);
+                    this.auxUnidades.push(unidad);
+                    if (i === 0){
+                      this.form.get('unidad')?.setValue(unidad);
+                      this.moduloVisible = true;
+                      this.form.get('categoria')?.setValue("planAccion");
+                      this.form.get('tipoReporte')?.setValue("unidad");
+                      this.form.get('tipoReporte')?.disable();
+                    }
+                  }
+                })
+              });
             } else {
               this.moduloVisible = false;
               Swal.fire({
