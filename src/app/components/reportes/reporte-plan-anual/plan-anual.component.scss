@@ -1,12 +1,14 @@
-.mat-card {
+@use "../../styles/global";
+
+.mat-mdc-card {
   background-color: #f1f5f8;
 }
 
-.mat-card-header {
+.mat-mdc-card-header {
   align-content: center;
 }
 
-.mat-card-title {
+.mat-mdc-card-title {
   color: var(--primary);
 }
 
@@ -35,7 +37,7 @@
   text-align: center;
 }
 
-.mat-form-field {
+.mat-mdc-form-field {
   margin: 1% 1% 1% 1%;
 }
 
@@ -67,7 +69,7 @@
   font-style: oblique;
 }
 
-.mat-raised-button {
+.mat-mdc-raised-button {
   margin: 2% 0% 2% 85%;
   width: 10%;
   display: block;
