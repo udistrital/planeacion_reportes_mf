@@ -8,9 +8,10 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatTableModule } from '@angular/material/table';
 import { MatSelectModule } from '@angular/material/select';
 import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatPaginatorModule } from '@angular/material/paginator';
+import { MatPaginatorIntl, MatPaginatorModule } from '@angular/material/paginator';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { PlanAnualComponent } from './components/reportes/reporte-plan-anual/plan-anual.component';
+import { TranslationPaginator } from './services/translationPaginator';
 
 @NgModule({
   declarations: [AppComponent, PlanAnualComponent],
@@ -27,7 +28,7 @@ import { PlanAnualComponent } from './components/reportes/reporte-plan-anual/pla
     FormsModule,
     ReactiveFormsModule,
   ],
-  providers: [],
+  providers: [{ provide: MatPaginatorIntl, useClass: TranslationPaginator }],
   bootstrap: [AppComponent],
 })
 export class AppModule {}
