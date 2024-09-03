@@ -244,10 +244,10 @@ export class PlanAnualComponent implements OnInit {
       if (tipoReporte === 'unidad') {
         body["unidad_id"] = (unidad.Id).toString();
         body["estado_plan_id"] = estado;
-        body["categoria"] = "Plan_Accion_Unidad";
+        body["categoria"] = "Plan de acción unidad";
       } else if (tipoReporte === 'general') {
         body["estado_plan_id"] = estado;
-        body["categoria"] = "Plan_Accion_General";
+        body["categoria"] = "Plan de acción general";
       }
     } else if (categoria === 'necesidades') {
       body["estado_plan_id"] = estado;
@@ -256,14 +256,14 @@ export class PlanAnualComponent implements OnInit {
       body["unidad_id"] = (unidad.Id).toString();
       body["categoria"] = "Evaluación";
     }
-    this.request.post(environment.PLANEACION_REPORTES_MID, `validacion`, body).subscribe((res: any) => {
+    this.request.post(environment.PLANEACION_REPORTES_MID, `validacion`, body).subscribe((res: DataRequest) => {
       if (res) {
         if (res.Data.reporte) {
           this.generarReporte();
         } else {
           Swal.fire({
             title: 'No es posible generar un reporte',
-            text: res.data.mensaje,
+            text: res.Data.mensaje,
             icon: 'info',
             showConfirmButton: false,
             timer: 3500
