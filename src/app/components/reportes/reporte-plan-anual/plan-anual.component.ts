@@ -12,6 +12,8 @@ import { RequestManager } from '../../../services/requestManager';
   styleUrls: ['./plan-anual.component.scss']
 })
 export class PlanAnualComponent implements OnInit {
+  CODIGO_ESTADO_PAF_SP!: string;
+
   form: FormGroup;
   vigencias: any[] = [];
   unidades: any[] = [];
@@ -64,6 +66,7 @@ export class PlanAnualComponent implements OnInit {
   }
 
   async ngOnInit() {
+    this.CODIGO_ESTADO_PAF_SP = await this.codigosService.getId('PLANES_CRUD', 'tipo-plan', 'PAF_SP');
     this.loadEstados();
   }
 
@@ -222,7 +225,7 @@ export class PlanAnualComponent implements OnInit {
     let plan = this.form.get('plan')?.value;
     let body: any = {
       plan_id: plan._id,
-      tipo_plan_id: await this.codigosService.getId('PLANES_CRUD', 'tipo-plan', 'PAF_SP'),
+      tipo_plan_id: this.CODIGO_ESTADO_PAF_SP,
       vigencia: (vigencia.Id).toString(),
       nombre: plan.nombre
     };
@@ -278,7 +281,7 @@ export class PlanAnualComponent implements OnInit {
 
   async procesarPlanAccionGeneral(formularioData: any) {
     let body = {
-      tipo_plan_id: await this.codigosService.getId('PLANES_CRUD', 'tipo-plan', 'PAF_SP'),
+      tipo_plan_id: this.CODIGO_ESTADO_PAF_SP,
       estado_plan_id: formularioData.estado,
       vigencia: (formularioData.vigencia.Id).toString(),
     }
@@ -314,7 +317,7 @@ export class PlanAnualComponent implements OnInit {
   async procesarPlanAccion(formularioData: any) {
     let body = {
       unidad_id: (formularioData.unidad.Id).toString(),
-      tipo_plan_id: await this.codigosService.getId('PLANES_CRUD', 'tipo-plan', 'PAF_SP'),
+      tipo_plan_id: this.CODIGO_ESTADO_PAF_SP,
       estado_plan_id: formularioData.estado,
       vigencia: (formularioData.vigencia.Id).toString(),
     }
@@ -361,7 +364,7 @@ export class PlanAnualComponent implements OnInit {
 
   async procesarNecesidades(formularioData: any) {
     let body = {
-      tipo_plan_id: await this.codigosService.getId('PLANES_CRUD', 'tipo-plan', 'PAF_SP'),
+      tipo_plan_id: this.CODIGO_ESTADO_PAF_SP,
       estado_plan_id: formularioData.estado,
       vigencia: (formularioData.vigencia.Id).toString(),
     }
@@ -399,7 +402,7 @@ export class PlanAnualComponent implements OnInit {
   async procesarEvaluacion(formularioData: any) {
     let body = {
       unidad_id: (formularioData.unidad.Id).toString(),
-      tipo_plan_id: await this.codigosService.getId('PLANES_CRUD', 'tipo-plan', 'PAF_SP'),
+      tipo_plan_id: this.CODIGO_ESTADO_PAF_SP,
       vigencia: (formularioData.vigencia.Id).toString(),
     }
 
