@@ -13,7 +13,7 @@ export const environment = {
   SINTOMAS_SERVICE: 'https://autenticacion.portaloas.udistrital.edu.co/apioas/sintomas_crud/v1/',
   //SERVICES PLANEACIÓN
   // PLANES_CRUD: 'http://localhost:8080/',
-  // PLANEACION_REPORTES_MID: 'http://localhost:8080/v1/',
+  // PLANEACION_REPORTES_MID: 'http://localhost:8082/v1/',
   PLANEACION_REPORTES_MID: 'https://autenticacion.portaloas.udistrital.edu.co/apioas/planeacion_reportes_mid/v1/',
   PLANES_CRUD: 'https://autenticacion.portaloas.udistrital.edu.co/apioas/planes_crud/',
   PLANES_MID: 'https://autenticacion.portaloas.udistrital.edu.co/apioas/planeacion_mid/v1/',
