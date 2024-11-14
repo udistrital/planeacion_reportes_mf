@@ -247,17 +247,17 @@ export class PlanAnualComponent implements OnInit {
       if (tipoReporte === 'unidad') {
         body["unidad_id"] = (unidad.Id).toString();
         body["estado_plan_id"] = estado;
-        body["categoria"] = "Plan de acción unidad";
+        body["categoria"] = "Plan_Accion_Unidad";
       } else if (tipoReporte === 'general') {
         body["estado_plan_id"] = estado;
-        body["categoria"] = "Plan de acción general";
+        body["categoria"] = "Plan_Accion_General";
       }
     } else if (categoria === 'necesidades') {
       body["estado_plan_id"] = estado;
       body["categoria"] = "Necesidades";
     } else if (categoria === 'evaluacion') {
       body["unidad_id"] = (unidad.Id).toString();
-      body["categoria"] = "Evaluación";
+      body["categoria"] = "Evaluacion";
     }
     this.request.post(environment.PLANEACION_REPORTES_MID, `validacion`, body).subscribe((res: DataRequest) => {
       if (res) {
