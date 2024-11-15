@@ -137,7 +137,7 @@ export class PlanAnualComponent implements OnInit {
   }
 
   loadUnidades() {
-    this.loadData(environment.PLANES_MID, `formulacion/get_unidades`, (data) => {
+    this.loadData(environment.PLANEACION_FORMULACION_MID, `formulacion/unidades`, (data) => {
       this.unidades = data;
       this.auxUnidades = data;
     });
